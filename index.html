@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Business Connect</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f5f1;--card:#fff;--tx:#1d1f1e;--mu:#6b706d;--ln:#e3e1da;--ac:#0f6b4f;--acx:#fff;--chip:#eef4f1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121513;--card:#1b1f1d;--tx:#eceeed;--mu:#9aa19d;--ln:#2c322f;--ac:#3fbf93;--acx:#0b1a14;--chip:#22302a}}
+:root[data-theme="dark"]{--bg:#121513;--card:#1b1f1d;--tx:#eceeed;--mu:#9aa19d;--ln:#2c322f;--ac:#3fbf93;--acx:#0b1a14;--chip:#22302a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{max-width:1000px;margin:0 auto;padding:28px 18px 8px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+.sub{color:var(--mu);margin:4px 0 16px}
+.bar{display:flex;gap:10px;flex-wrap:wrap}
+input,textarea,select{width:100%;font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:10px 12px}
+textarea{min-height:84px;resize:vertical}
+.bar input{flex:1;min-width:200px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--ln);background:var(--card);color:var(--tx);padding:10px 14px}
+button.p{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:600}
+button.d{color:#c0392b}
+#app main,main{max-width:1000px;margin:0 auto;padding:12px 18px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.top{display:flex;gap:12px;align-items:center}
+.av{width:46px;height:46px;border-radius:50%;background:var(--ac);color:var(--acx);display:grid;place-items:center;font-weight:700;flex:none}
+.nm{font-weight:650;line-height:1.2}.rl,.lc,.bd{color:var(--mu);font-size:14px}
+.biz{font-weight:600;font-size:15px}
+.about{font-size:14.5px;white-space:pre-wrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips a{background:var(--chip);color:var(--ac);text-decoration:none;font-size:13px;padding:4px 10px;border-radius:99px;word-break:break-all}
+.act{display:flex;gap:8px;margin-top:auto}
+.act button{padding:5px 10px;font-size:13px}
+.empty,.note{grid-column:1/-1;text-align:center;color:var(--mu);padding:30px 10px}
+.note{background:var(--chip);border-radius:12px;padding:12px;text-align:left;font-size:14px}
+dialog{border:1px solid var(--ln);border-radius:16px;background:var(--bg);color:var(--tx);width:min(620px,94vw);padding:0;max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+form{padding:18px;display:grid;gap:12px}
+form h2{margin:0}
+label{font-size:13px;color:var(--mu);display:grid;gap:4px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.g2{grid-template-columns:1fr}}
+fieldset{border:1px solid var(--ln);border-radius:12px;padding:12px;display:grid;gap:10px;margin:0}
+legend{font-size:13px;color:var(--mu);padding:0 6px}
+.row{display:flex;gap:10px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<header>
+  <h1>Business Connect</h1>
+  <p class="sub">A shared directory: add your profile, business details and links, and see everyone else's.</p>
+  <div class="bar" id="bar" hidden>
+    <input id="q" type="search" placeholder="Search name, business, location, category…">
+    <button class="p" id="add">+ Add / edit my profile</button>
+    <button id="addo" hidden>+ Add another person</button>
+    <button id="out">Sign out</button>
+  </div>
+</header>
+<section id="auth" style="max-width:380px;margin:20px auto;padding:0 18px;display:grid;gap:10px">
+  <input id="em" type="email" placeholder="Email" autocomplete="email">
+  <input id="pw" type="password" placeholder="Password (6+ characters)" autocomplete="current-password">
+  <button class="p" id="go">Sign in</button>
+  <button id="tg">New here? Create an account</button>
+  <div id="aerr" class="bd" role="alert"></div>
+</section>
+<div id="app" hidden><main id="list"></main></div>
+
+<dialog id="dlg">
+<form id="f" onsubmit="return false">
+  <h2 id="ft">Your profile</h2>
+  <div class="g2">
+    <label>Full name *<input name="name" required maxlength="80"></label>
+    <label>Role / headline<input name="role" maxlength="100" placeholder="Founder, Photographer…"></label>
+  </div>
+  <label>About<textarea name="about" maxlength="1200" placeholder="Tell people about yourself"></textarea></label>
+  <div class="g2">
+    <label>Location<input name="loc" maxlength="100" placeholder="City, area"></label>
+    <label>Personal email (optional)<input name="pemail" type="email" maxlength="120"></label>
+  </div>
+  <fieldset><legend>Business</legend>
+    <div class="g2">
+      <label>Business name<input name="biz" maxlength="100"></label>
+      <label>Category<input name="cat" maxlength="80" placeholder="Plumbing, Marketing…"></label>
+      <label>Business email<input name="bemail" type="email" maxlength="120"></label>
+      <label>Phone / WhatsApp<input name="phone" maxlength="40"></label>
+    </div>
+    <label>Business address / local info<input name="addr" maxlength="200"></label>
+    <label>Business details<textarea name="bdet" maxlength="1500" placeholder="Services, hours, pricing, registration…"></textarea></label>
+  </fieldset>
+  <fieldset><legend>Social links (paste URLs)</legend>
+    <div class="g2">
+      <label>LinkedIn<input name="s_linkedin"></label><label>Instagram<input name="s_instagram"></label>
+      <label>Facebook<input name="s_facebook"></label><label>X / Twitter<input name="s_x"></label>
+      <label>TikTok<input name="s_tiktok"></label><label>YouTube<input name="s_youtube"></label>
+    </div>
+  </fieldset>
+  <label>Business website &amp; other links (one per line, optionally "Label | URL")<textarea name="links" placeholder="My website | https://example.com&#10;https://shop.example.com"></textarea></label>
+  <div class="row"><button type="button" id="cx">Cancel</button><button class="p" id="sv">Save</button></div>
+  <div id="err" class="bd" role="alert"></div>
+</form>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const $=s=>document.querySelector(s);
+const sb=supabase.createClient("https://povroplolemmnvqssvfc.supabase.co","sb_publishable_eq3rdmaidB9B8q4Z1Y0aSg_y9KwlZSD");
+const SOC=[["linkedin","LinkedIn"],["instagram","Instagram"],["facebook","Facebook"],["x","X"],["tiktok","TikTok"],["youtube","YouTube"]];
+let uid=null,admin=false,items=[],editId=null,mode="in",target="self";
+
+function safeUrl(u){u=(u||"").trim();if(!u)return null;if(!/^https?:\/\//i.test(u))u="https://"+u;
+  try{const x=new URL(u);return /^https?:$/.test(x.protocol)?x.href:null}catch{return null}}
+function el(t,c,txt){const e=document.createElement(t);if(c)e.className=c;if(txt!=null)e.textContent=txt;return e}
+function link(txt,href){const a=el("a",null,txt);a.href=href;a.target="_blank";a.rel="noopener noreferrer";return a}
+const okMail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e||"");
+
+function card(p){
+  const c=el("div","card"),top=el("div","top");
+  top.append(el("div","av",(p.name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase()));
+  const w=el("div");w.append(el("div","nm",p.name||""));
+  if(p.role)w.append(el("div","rl",p.role));if(p.loc)w.append(el("div","lc","📍 "+p.loc));
+  top.append(w);c.append(top);
+  if(p.biz)c.append(el("div","biz",p.biz+(p.cat?" · "+p.cat:"")));
+  if(p.about)c.append(el("div","about",p.about));
+  if(p.bdet)c.append(el("div","about bd",p.bdet));
+  if(p.addr)c.append(el("div","bd","🏢 "+p.addr));
+  const ch=el("div","chips");
+  if(okMail(p.bemail))ch.append(link("✉ "+p.bemail,"mailto:"+p.bemail));
+  if(okMail(p.pemail))ch.append(link("✉ "+p.pemail,"mailto:"+p.pemail));
+  if(p.phone&&/^[\d\s+()\-]{5,}$/.test(p.phone))ch.append(link("☎ "+p.phone,"tel:"+p.phone.replace(/[^\d+]/g,"")));
+  SOC.forEach(([k,l])=>{const u=safeUrl(p["s_"+k]);if(u)ch.append(link(l,u))});
+  (p.links||"").split("\n").forEach(line=>{const i=line.indexOf("|");
+    const lab=i>0?line.slice(0,i).trim():"",u=safeUrl(i>0?line.slice(i+1):line);
+    if(u)ch.append(link(lab||u.replace(/^https?:\/\/(www\.)?/,"").slice(0,40),u))});
+  if(ch.children.length)c.append(ch);
+  if(p.owner===uid||admin){const a=el("div","act"),e=el("button",null,"Edit"),d=el("button","d","Delete");
+    e.onclick=()=>openForm(p);d.onclick=()=>del(p.id);a.append(e,d);c.append(a)}
+  return c;
+}
+function render(){
+  const q=$("#q").value.toLowerCase().trim(),L=$("#list");L.replaceChildren();
+  const vis=items.filter(p=>!q||[p.name,p.role,p.biz,p.cat,p.loc,p.addr,p.about].join(" ").toLowerCase().includes(q))
+    .sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  if(!vis.length)L.append(el("div","empty",items.length?"No matches.":"No profiles yet — be the first to add yours."));
+  vis.forEach(p=>L.append(card(p)));
+}
+function openForm(p){
+  editId=p?p.id:null;const f=$("#f");f.reset();$("#err").textContent="";p=p||{};
+  [...f.elements].forEach(x=>{if(x.name&&p[x.name]!=null)x.value=p[x.name]});
+  $("#ft").textContent=p.id?(p.owner===uid?"Your profile":"Edit profile"):(target==="self"?"Your profile":"Add another person");
+  $("#dlg").showModal();
+}
+async function save(){
+  const f=$("#f");if(!f.reportValidity())return;
+  const o={};[...f.elements].forEach(x=>{if(x.name)o[x.name]=x.value.trim()});
+  o.updated_at=new Date().toISOString();
+  let r;
+  if(editId)r=await sb.from("profiles").update(o).eq("id",editId);
+  else{if(target==="self")o.owner=uid;r=await sb.from("profiles").insert(o)}
+  if(r.error){$("#err").textContent="Could not save: "+r.error.message;return}
+  $("#dlg").close();load();
+}
+async function del(id){if(!confirm("Delete this profile?"))return;
+  const r=await sb.from("profiles").delete().eq("id",id);if(r.error)alert(r.error.message);load()}
+async function load(){
+  const r=await sb.from("profiles").select("*");
+  if(r.error){$("#list").replaceChildren(el("div","empty","Could not load: "+r.error.message));return}
+  items=r.data;render();
+}
+async function show(session){
+  const on=!!session;$("#auth").hidden=on;$("#app").hidden=!on;$("#bar").hidden=!on;
+  if(!on){uid=null;admin=false;return}
+  uid=session.user.id;
+  const a=await sb.rpc("is_admin");admin=a.data===true;$("#addo").hidden=!admin;
+  load();
+}
+$("#q").oninput=render;$("#cx").onclick=()=>$("#dlg").close();$("#sv").onclick=save;
+$("#add").onclick=()=>{target="self";openForm(items.find(p=>p.owner===uid))};
+$("#addo").onclick=()=>{target="other";openForm(null)};
+$("#out").onclick=()=>sb.auth.signOut();
+$("#tg").onclick=()=>{mode=mode==="in"?"up":"in";$("#go").textContent=mode==="in"?"Sign in":"Create account";
+  $("#tg").textContent=mode==="in"?"New here? Create an account":"Have an account? Sign in";$("#aerr").textContent=""};
+$("#go").onclick=async()=>{
+  const email=$("#em").value.trim(),password=$("#pw").value;$("#aerr").textContent="";
+  if(!okMail(email)||password.length<6){$("#aerr").textContent="Enter a valid email and a password of 6+ characters.";return}
+  const r=mode==="in"?await sb.auth.signInWithPassword({email,password}):await sb.auth.signUp({email,password});
+  if(r.error)$("#aerr").textContent=r.error.message;
+  else if(!r.data.session)$("#aerr").textContent="Account created, but email confirmation is still switched on in Supabase.";
+};
+sb.auth.onAuthStateChange((_e,s)=>show(s));
+</script>
+</body>
+</html>
